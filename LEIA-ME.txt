@@ -1,0 +1,4 @@
+IMAGENS DOS JOGADORES (20 ícones)
+Substitua imagem1.png ... imagem20.png pelas imagens oficiais, mantendo EXATAMENTE o mesmo nome.
+Use PNG quadrado (recomendado 256x256). Não precisa mexer em HTML/JavaScript.
+O app guarda no Supabase só a identificação (ex.: imagem7.png), então a troca vale para todos os jogadores que usam aquele ícone.

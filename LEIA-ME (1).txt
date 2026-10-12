@@ -1,0 +1,1 @@
+Os aplausos sao gerados pelo navegador (WebAudio). Para usar um MP3 seu, coloque aqui e ajuste clap() em js/app.js.
