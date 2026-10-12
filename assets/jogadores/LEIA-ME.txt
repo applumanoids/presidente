@@ -1,0 +1,4 @@
+Coloque aqui as imagens dos jogadores (png/jpg/webp, quadradas).
+Depois liste os nomes dos arquivos em manifest.json, assim:
+["camila.png","bruno.jpg"]
+O GitHub Pages nao lista pastas sozinho, por isso o manifest e necessario.
