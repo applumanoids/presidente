@@ -1,3 +1,4 @@
+const APP_VERSION='6.0';
 // Presidente · Lumanoids — app principal (dados no Supabase, placar ao vivo via Realtime)
 const $=s=>$d.querySelector(s),$d=document;
 const CG={pres:'presidente',vice:'vice',sup:'suplente',lixinho:'lixinho',lixao:'lixao'};
@@ -10,7 +11,7 @@ const resR=rid=>DB.res.filter(x=>x.rodada_id==rid).sort((a,b)=>a.posicao-b.posic
 const partR=rid=>DB.part.filter(x=>x.rodada_id==rid).sort((a,b)=>a.ordem_inicial-b.ordem_inicial);
 const dur=s=>{s=Math.max(0,s|0);return[s/3600|0,(s%3600)/60|0,s%60].map(x=>String(x).padStart(2,'0')).join(':')};
 const el=r=>r.status=='finalizada'?(r.duracao_seg||0):(Date.now()-new Date(r.iniciada_em))/1000;
-const pimg=(id,z)=>{const p=P(id);return p&&p.imagem?`<img class=av src="assets/jogadores/${encodeURI(p.imagem)}" width=${z} height=${z} style="object-fit:cover" onerror="this.outerHTML=avt('${id}',${z})">`:avt(id,z)};
+const pimg=(id,z)=>{const p=P(id);return p&&p.imagem?`<img class=av src="imagens/${encodeURI(p.imagem)}" width=${z} height=${z} style="object-fit:cover" onerror="this.outerHTML=avt('${id}',${z})">`:avt(id,z)};
 const BF='<div class=bf><div class=bfd></div><b>BOLSA FAMÍLIA</b><small>Rodada em modo especial</small></div>';
 
 /* ---------- dados ---------- */
@@ -53,36 +54,36 @@ function clsRows(r){const n=partR(r.id).length;return resR(r.id).map(x=>{const q
 const FLAG='<svg class=flag width=96 height=64 viewBox="0 0 90 60"><rect width=90 height=60 fill="#fff"/><circle cx=45 cy=30 r=18 fill="#BC002D"/></svg>';
 function vLogin(){return`<div class=lgbg><div class=lg>${FLAG}${ic('crown',54)}<h1>PRESIDENTE</h1><p class=mu>Acesso do grupo</p><input type=text id=lu placeholder="Usuário" autocapitalize=none autocomplete=username><input type=password id=lp placeholder="Senha" autocomplete=current-password style="width:100%;padding:14px;border-radius:14px;border:2px solid #e3e3e3;font:16px Inter,system-ui,sans-serif;margin-bottom:10px"><button class="btn p" data-a=login>${ic('lock')} Entrar</button><p class=foot>Criado por <b>Lumanoids</b></p></div></div>`}
 function vHome(){const em=DB.campeonatos.find(c=>c.status=='em_andamento'),pr={};DB.res.filter(x=>x.cargo=='presidente').forEach(x=>pr[x.jogador_id]=(pr[x.jogador_id]||0)+1);const top=Object.entries(pr).sort((a,b)=>b[1]-a[1])[0],cr=em&&curR(em.id);
- return(em?`<button class="live blink" data-a=live data-id="${em.id}"><span class=dot></span><div style="flex:1"><b>Campeonato em andamento</b><small>${esc(em.nome)}${cr?' · Rodada '+cr.numero+' · Juiz '+esc(cr.juiz):''}<br>Toque para acompanhar ao vivo</small></div>${ic('radio',26)}</button>`:`<div class="live off">${ic('radio',26)}<div><b>Sem campeonato no momento</b></div></div>`)+
- `<div class=stats><div><b>${DB.campeonatos.length}</b>campeonatos</div><div><b>${DB.rodadas.length}</b>rodadas</div><div><b>${top?esc(nm(top[0])):'–'}</b>maior presidente${top?' ('+top[1]+'×)':''}</div></div>
- <button class="btn p" data-a=newc>${ic('plus')} Novo Campeonato</button>
- <div class=g2><button class=btn data-a=rank>${ic('chart')} Ranking</button><button class=btn data-a=hist>${ic('trophy')} Histórico</button><button class=btn data-a=pl>${ic('users')} Jogadores</button><button class=btn data-a=regras>${ic('book')} Regras</button></div>
- ${standalone()?'':`<button class=btn style="margin-top:10px" data-a=install>${ic('phone')} Instalar no celular</button>`}`}
-function addForm(){return`<div class=card><input type=text id=pn placeholder="Nome do novo jogador" maxlength=30 value="${esc(S.pn||'')}"><div class=g2><button class=btn data-a=gal data-id=new>${S.newImg?'Imagem: '+esc(S.newImg):'Escolher imagem'}</button><button class="btn p" data-a=addp>${ic('plus')} Adicionar</button></div></div>`}
+ const hero=em?`<button class="hero blink" data-a=live data-id="${em.id}"><div class=hico>${ic('radio',46)}</div><div><b>Campeonato em andamento</b><small>${esc(em.nome)}${cr?' · Rodada '+cr.numero+' · Juiz '+esc(cr.juiz):''}<br>Toque para acompanhar ao vivo</small></div></button>`:`<div class="hero off"><div class=hico>${ic('radio',46)}</div><div><b>Sem campeonato no momento</b><small>Inicie um novo campeonato para começar a jogar!</small></div></div>`;
+ const mi=(a,i,t,d)=>`<button class=mi data-a=${a}><span class=ico>${ic(i,22)}</span><div><b>${t}</b><small>${d}</small></div><span class=ch>${ic('chev',18)}</span></button>`;
+ return hero+`<div class=st3><div><span class=ico>${ic('trophy',20)}</span><b>${DB.campeonatos.length}</b>campeonatos</div><div><span class=ico>${ic('layers',20)}</span><b>${DB.rodadas.length}</b>rodadas</div><div><span class=ico>${ic('crown',20)}</span><b class=n>${top?esc(nm(top[0])):'–'}</b>maior presidente${top?' ('+top[1]+'×)':''}</div></div>
+ <button class=cta data-a=newc>${ic('plus',26)} Novo Campeonato<span class=ch>${ic('chev',22)}</span></button>
+ <div class=mg>${mi('rank','chart','Ranking','Confira a classificação geral')}${mi('hist','trophy','Histórico','Veja todos os campeonatos')}${mi('pl','users','Jogadores','Gerencie os participantes')}${mi('regras','book','Regras','Veja como jogar')}</div>`}
+function addForm(){return`<div class=card><input type=text id=pn placeholder="Nome do novo jogador" maxlength=30 value="${esc(S.pn||'')}"><div class=g2><button class=btn data-a=gal data-id=new>${S.newImg?ic('image',18)+' Imagem '+esc(S.newImg.replace(/\D/g,'')):ic('image',18)+' Escolher imagem'}</button><button class="btn p" data-a=addp>${ic('plus')} Adicionar</button></div></div>`}
 function vNewc(){const ps=DB.jogadores.filter(p=>p.ativo);return`<h2 style="margin-top:0">Quem vai jogar hoje?</h2>${addForm()}<div class=g2 style="margin-bottom:12px"><button class="btn s" data-a=selall>Selecionar todos</button><button class="btn s" data-a=selnone>Limpar seleção</button></div>
  ${ps.map(p=>`<div class="row t ${S.sel.includes(p.id)?'sel':''}" data-a=tsel data-id="${p.id}"><span class=ck>${S.sel.includes(p.id)?ic('check',16):''}</span>${pimg(p.id,30)}<div class=nm>${esc(p.nome)}</div></div>`).join('')}
  <button class="btn p" style="margin-top:12px" data-a=start>${ic('play')} Iniciar Campeonato (${S.sel.length})</button>`}
-function vPl(){return`<h2 style="margin-top:0">Jogadores</h2>${addForm()}${DB.jogadores.map(p=>`<div class=row style="${p.ativo?'':'opacity:.55'}">${pimg(p.id,38)}<div class=nm>${esc(p.nome)}<small>${p.ativo?'Ativo':'Inativo'}</small></div><button class="btn s" data-a=ren data-id="${p.id}">Nome</button><button class="btn s" data-a=gal data-id="${p.id}">Imagem</button><button class="btn s" data-a=tact data-id="${p.id}">${p.ativo?'Desativar':'Ativar'}</button></div>`).join('')}`}
+function vPl(){return`${addForm()}${DB.jogadores.map(p=>`<div class=row style="${p.ativo?'':'opacity:.6'}">${pimg(p.id,38)}<div class=nm>${esc(p.nome)}<small>${p.ativo?'Ativo':'Inativo'}</small></div><div class=rb><button class=ib title="Editar nome" data-a=ren data-id="${p.id}">${ic('edit')}</button><button class=ib title="Imagem" data-a=gal data-id="${p.id}">${ic('image')}</button><button class="ib ${p.ativo?'':'off'}" title="${p.ativo?'Desativar':'Ativar'}" data-a=tact data-id="${p.id}">${ic('power')}</button></div></div>`).join('')}`}
 function vChamp(){const c=CH(S.cid);if(!c)return vHome();if(c.status=='finalizado')return vDet(c);
- const cr=curR(c.id),jm=S.mode=='judge',st=standing(c.id),b=standing(c.id,cr&&cr.id),pos={},pt={};b.forEach((s,i)=>{pos[s.id]=i+1;pt[s.id]=s.total});
+ const cr=curR(c.id),jm=S.mode=='judge',hasR=rds(c.id).some(r=>r.status=='finalizada'),st=standing(c.id),b=standing(c.id,cr&&cr.id),pos={},pt={};b.forEach((s,i)=>{pos[s.id]=i+1;pt[s.id]=s.total});
  let ids,can=false;if(cr){const pl=resR(cr.id).map(x=>x.jogador_id);ids=partR(cr.id).map(x=>x.jogador_id).filter(i=>!pl.includes(i));can=jm}else ids=b.filter(s=>s.ativo!==false).map(s=>s.id);
  const placed=cr?resR(cr.id).length:0,n=cr?partR(cr.id).length:0,done=cr&&!ids.length&&n>=2,ub=`<button class=btn data-a=undo ${placed?'':'disabled'}>${ic('undo')} Desfazer último</button>`;
  let h=`<div class=camp>${ic('trophy',38)}<div><small>${jm?'Você é o juiz':'Ao vivo'}</small><b>${esc(c.nome.replace('Campeonato ',''))}</b></div><div>${cr?`Rodada ${cr.numero}<small>${ic('clock',13)} <span data-t="${cr.id}">${dur(el(cr))}</span></small>`:`<small>${fd(c.iniciado_em)}</small>${rds(c.id).length} rodadas`}</div></div>
  ${cr?`<div class="card mu" style="padding:10px">${ic('user',16)} Juiz: <b style="color:var(--tx)">${esc(cr.juiz)}</b> · Rodada <b style="color:var(--tx)">${cr.tipo}</b></div>`:''}${cr&&cr.bolsa_familia?BF:''}
  ${cr?`<p style="font-weight:600;margin:4px 0 10px;font-size:15px">${can?'Toque no jogador conforme a ordem que terminar':'Jogadores ainda na rodada'}</p>`:''}
- ${ids.length?`<div class=tls>${ids.map(id=>`<div class="tl ${can?'tap':''}" ${can?`data-a=pick data-id="${id}"`:''}>${pimg(id,34)}<b>${esc(nm(id))}</b><small>${pos[id]}º · ${pt[id]} pts</small></div>`).join('')}</div>`:''}
+ ${ids.length?`<div class=tls>${ids.map(id=>`<div class="tl ${can?'tap':''}" ${can?`data-a=pick data-id="${id}"`:''}>${pimg(id,34)}<b>${esc(nm(id))}</b>${hasR?`<small>${pos[id]}º · ${pt[id]} pts</small>`:''}</div>`).join('')}</div>`:''}
  ${cr?`<h2 style="margin-top:6px">Classificação da rodada <span class=mu style="font-weight:400;float:right;margin-top:3px">${placed} de ${n}</span></h2>${clsRows(cr)}`:(jm?'':'<div class="card mu">Aguardando a próxima rodada…</div>')}
  ${jm&&cr?`<div style="margin:12px 0">${done?`<div class=g2>${ub}<button class="btn p" data-a=endr>${ic('check')} Finalizar</button></div>`:ub}</div>`:''}
  ${jm&&!cr?`<button class="btn p" data-a=nround>${ic('play')} Nova rodada</button><button class=btn data-a=parts>${ic('users')} Editar participantes</button>${rds(c.id).length?`<button class=btn data-a=endc>${ic('flag')} Finalizar campeonato</button>`:''}`:''}
- <h2>Ranking do campeonato</h2>${stRows(st)}
- <button class=btn style="margin-top:10px" data-a=share>${ic('share')} Compartilhar campeonato ao vivo</button>${jm?'':`<button class=btn data-a=judge>${ic('edit')} Sou o juiz: anotar rodada</button>`}`;
+  <button class=btn style="margin-top:10px" data-a=share>${ic('share')} Compartilhar campeonato ao vivo</button>${jm?'':`<button class=btn data-a=judge>${ic('edit')} Sou o juiz: anotar rodada</button>`}`;
  return h}
-function vDet(c){const st=standing(c.id),top=k=>{const m=Math.max(...st.map(s=>s[k]));return m>0?[st.filter(s=>s[k]==m).map(s=>nm(s.id)).join(' e '),m]:['–',0]},mp=top('pres'),ml=top('lixao'),rs=rds(c.id);
- return`<div class=camp>${ic('trophy',38)}<div><small>Finalizado em ${fd(c.encerrado_em)}</small><b>${esc(c.nome.replace('Campeonato ',''))}</b></div><div><small>${fd(c.iniciado_em)}</small>${rs.length} rodadas</div></div>
- <p class=mu style="margin-bottom:12px">Este campeonato teve <b>${rs.length} rodadas</b>.</p>
- <div class=g2 style="margin-bottom:14px"><div class=stc>${ic('crown',28)}<small>Maior presidente</small><b>${esc(mp[0])}</b><span>${mp[1]}×</span></div><div class=stc>${ic('trash',28)}<small>Maior lixão</small><b>${esc(ml[0])}</b><span>${ml[1]}×</span></div></div>
- <h2 style="margin-top:0">Classificação final</h2>${stRows(st)}
- <h2>Rodadas</h2>${rs.map(r=>{const n=partR(r.id).length;return`<div class=card><b>Rodada ${r.numero}</b> <span class=mu>· ${esc(r.juiz)} · ${r.tipo} · ${dur(r.duracao_seg||0)}${r.bolsa_familia?' · Bolsa Família':''}</span><div style="margin-top:6px">${resR(r.id).map(x=>`<span class="pc ${cls(x.posicao,n)}">${x.posicao}º ${esc(nm(x.jogador_id))}</span>`).join('')}</div></div>`}).join('')}
+function vDet(c){const st=standing(c.id),top=k=>{const m=Math.max(...st.map(s=>s[k]));return m>0?[st.filter(s=>s[k]==m).map(s=>nm(s.id)).join(' e '),m]:['–',0]},mp=top('pres'),ml=top('lixao'),rs=rds(c.id),mx=Math.max(0,...st.map(s=>s.total));
+ return`<div class="card dh"><div class=dht>${ic('trophy',46)}</div><div class=dhx><small>Finalizado em ${fd(c.encerrado_em)}</small><b>${esc(c.nome.replace('Campeonato ',''))}</b><span>Este campeonato teve <b style="font-size:inherit;color:var(--tx)">${rs.length} rodadas</b>.</span></div><div class=dchip>${ic('cal',20)}<small style="color:var(--r2)">${fd(c.iniciado_em)}</small><b>${rs.length} rodadas</b></div></div>
+ <div class=st3><div><span class=ico>${ic('users',20)}</span><b>${st.length}</b>jogadores</div><div><span class=ico>${ic('layers',20)}</span><b>${rs.length}</b>rodadas</div><div><span class=ico>${ic('star',20)}</span><b>${mx}</b>maior pontuação</div></div>
+ <div class=g2 style="margin-bottom:14px"><div class="stc gold">${ic('crown',34)}<small>Maior presidente</small><b>${esc(mp[0])}</b><span>${mp[1]}×</span></div><div class="stc pink">${ic('trash',34)}<small>Maior lixão</small><b>${esc(ml[0])}</b><span>${ml[1]}×</span></div></div>
+ <h2 class=sh2 style="margin-top:0">${ic('chart',22)} Classificação final <span class=mu>${st.length} jogadores</span></h2>${stRows(st)}
+ <button class=mi style="width:100%;margin:14px 0" data-a=trounds><span class=ico>${ic('list',20)}</span><div><b>Rodadas</b></div><span class=ch>${ic(S.rd?'dn':'chev',20)}</span></button>
+ ${S.rd?rs.map(r=>{const n=partR(r.id).length;return`<div class=card><b>Rodada ${r.numero}</b> <span class=mu>· ${esc(r.juiz)} · ${r.tipo} · ${dur(r.duracao_seg||0)}${r.bolsa_familia?' · Bolsa Família':''}</span><div style="margin-top:6px">${resR(r.id).map(x=>`<span class="pc ${cls(x.posicao,n)}">${x.posicao}º ${esc(nm(x.jogador_id))}</span>`).join('')}</div></div>`}).join(''):''}
  <button class="btn p" data-a=shareimg>${ic('share')} Compartilhar imagem no WhatsApp</button><button class=btn data-a=reopen>${ic('undo')} Reabrir campeonato</button>`}
 function vHist(){
  if(S.sub=='c'){const f=DB.campeonatos.filter(c=>c.status=='finalizado').sort((a,b)=>(b.encerrado_em||'').localeCompare(a.encerrado_em||''));
@@ -97,22 +98,30 @@ function vPj(){const id=S.pid,rs=DB.res.filter(x=>x.jogador_id==id).map(x=>({x,r
  <h2>O que aconteceu</h2>${rs.slice(0,40).map(o=>{const c=CH(o.r.campeonato_id),q=role(o.x.posicao,partR(o.r.id).length);return`<div class="row rc"><span class="pos${pc(o.x.posicao)}">${o.x.posicao}º</span><div class=nm>${esc(c?c.nome:'')} · Rodada ${o.r.numero}<small>${q[1]} · ${fd(o.r.iniciada_em)}</small></div><span class=pts>${o.x.pontos} pts</span></div>`}).join('')||'<div class="card mu">Ainda sem rodadas.</div>'}`}
 function vRank(){const ys=[...new Set(DB.campeonatos.filter(c=>c.status=='finalizado').map(c=>new Date(c.iniciado_em).getFullYear()))].sort().reverse(),L=gRank(S.year);
  return`<select data-a=year style="width:100%;padding:13px;border-radius:14px;border:2px solid #e3e3e3;font:16px Inter,system-ui,sans-serif;margin-bottom:10px;background:#fff"><option value=all>Todos os anos</option>${ys.map(y=>`<option ${S.year==y?'selected':''}>${y}</option>`).join('')}</select>${L.length?L.map(rankRow).join(''):'<div class="card mu">Sem campeonatos finalizados.</div>'}`}
+function vMgmt(){const L=[...DB.campeonatos].sort((a,b)=>b.iniciado_em.localeCompare(a.iniciado_em));
+ return L.length?`<p class=mu style="margin:0 0 12px">Toque em um campeonato para ver as opções.</p>`+L.map(c=>{const o=S.open==c.id;return`<div class="acc ${o?'open':''}"><button class=acch data-a=acc data-id="${c.id}"><span class=ico>${ic('trophy',18)}</span><div class=nm>${esc(c.nome)}<small>${fd(c.iniciado_em)} · ${rds(c.id).length} rodadas</small></div><span class=chip2>${c.status=='finalizado'?'Finalizado':'Em andamento'}</span><span class=ch>${ic(o?'up':'dn',18)}</span></button>${o?`<div class=accb><button class="btn p" data-a=edc data-id="${c.id}">${ic('edit')} Editar campeonato</button><button class=btn data-a=delc2 data-id="${c.id}">${ic('trash')} Apagar campeonato</button></div>`:''}</div>`}).join(''):'<div class="card mu">Nenhum campeonato cadastrado.</div>'}
+function vEdc(){const c=CH(S.eid);if(!c)return vMgmt();const fin=c.status=='finalizado';
+ return`<div class=card><label class=lb>Nome do campeonato</label><input type=text id=en maxlength=40 value="${esc(S.en||'')}"><div class=mu style="font-size:13px">Início: ${fd(c.iniciado_em)} · ${rds(c.id).length} rodadas · ${fin?'Finalizado':'Em andamento'}</div></div>
+ ${fin?'':`<h2>Participantes</h2><p class=mu style="margin-bottom:10px">Vale a partir da próxima rodada. Quem entra começa com os pontos do último colocado.</p>${DB.jogadores.filter(p=>p.ativo||S.part.includes(p.id)).map(p=>`<div class="row t ${S.part.includes(p.id)?'sel':''}" data-a=tpart data-id="${p.id}"><span class=ck>${S.part.includes(p.id)?ic('check',16):''}</span>${pimg(p.id,30)}<div class=nm>${esc(p.nome)}</div></div>`).join('')}`}
+ <button class="btn p" style="margin-top:12px" data-a=saveedc>${ic('check')} Salvar alterações</button><button class=btn data-a=delc2 data-id="${c.id}">${ic('trash')} Apagar campeonato</button>`}
 const vInfo=()=>`<div class=card style="text-align:center;padding:22px 14px"><p>Sabe quanto custa criar um aplicativo como este?</p><div class=pr style="margin:12px 0">Apenas<b>R$ 800,00</b></div><a class="btn p" href="https://applumanoids.github.io/sitelumanoids.com/" target=_blank rel=noopener>Conheça o site da Lumanoids</a></div>`;
 const vRegras=()=>`<div class=card><b style="color:var(--r)">Regra número 1</b><p style="margin-top:4px">Luma é linda</p></div><div class=card><b style="color:var(--r)">Regra número 2</b><p style="margin-top:4px">Luma é honesta</p></div>`;
 const vConfig=()=>`<div class=card style="display:flex;align-items:center;gap:10px">${ic(snd?'vol':'mute')}<b style="flex:1">Sons do jogo</b><button class="btn s" data-a=tsnd>${snd?'Desligar':'Ligar'}</button></div>
  <button class=btn data-a=install>${ic('phone')} Instalar no celular</button><button class=btn data-a=exp>${ic('dl')} Exportar backup (.json)</button>
- <h2>Apagar campeonato</h2>${DB.campeonatos.map(c=>`<div class=row><div class=nm>${esc(c.nome)}<small>${fd(c.iniciado_em)} · ${c.status=='finalizado'?'finalizado':'em andamento'}</small></div><button class="btn s" data-a=delc data-id="${c.id}">${ic('trash',16)} Apagar</button></div>`).join('')||'<div class="card mu">Nenhum campeonato.</div>'}
- <button class=btn style="margin-top:14px" data-a=logout>${ic('out')} Sair</button>`;
+ <button class=btn data-a=mgmt>${ic('list')} Gerenciar campeonatos</button>
+ <button class=btn data-a=logout>${ic('out')} Sair</button>`;
 function sheet(){
  if(S.sheet=='round')return`<div class=ov><div class=sh><h3>Quem vai anotar esta rodada?</h3><div class=jw>${DB.jogadores.filter(p=>p.ativo).map(p=>`<button class="jc ${S.judge==p.nome?'on':''}" data-a=jpick data-v="${esc(p.nome)}">${esc(p.nome)}</button>`).join('')}</div><input type=text id=jn placeholder="Ou digite outro nome" value="${esc(S.judge||'')}"><h3>Tipo da rodada</h3><div class=g2 style="margin-bottom:12px"><button class="btn ${S.tipo=='aberta'?'p':''}" data-a=tipo data-v=aberta>Aberta</button><button class="btn ${S.tipo=='fechada'?'p':''}" data-a=tipo data-v=fechada>Fechada</button></div><button class="btn p" data-a=startr>${ic('play')} Iniciar rodada</button><button class=btn data-a=close>Cancelar</button></div></div>`;
  if(S.sheet=='parts')return`<div class=ov><div class=sh><h3>Editar participantes</h3><p class=mu style="margin-bottom:10px">Vale a partir da próxima rodada. Quem entra começa com os pontos do último colocado.</p>${DB.jogadores.filter(p=>p.ativo||S.part.includes(p.id)).map(p=>`<div class="row t ${S.part.includes(p.id)?'sel':''}" data-a=tpart data-id="${p.id}"><span class=ck>${S.part.includes(p.id)?ic('check',16):''}</span>${pimg(p.id,30)}<div class=nm>${esc(p.nome)}</div></div>`).join('')}<button class="btn p" data-a=okparts>Aplicar</button><button class=btn data-a=close>Cancelar</button></div></div>`;
- if(S.sheet=='gal')return`<div class=ov><div class=sh><h3>Escolha a imagem</h3><div class=gal><button data-a=setimg data-v="">${avt('x',60)}<br>Padrão</button>${GAL.map(f=>`<button data-a=setimg data-v="${esc(f)}"><img src="assets/jogadores/${encodeURI(f)}"></button>`).join('')}</div>${GAL.length?'':'<p class=mu>Nenhuma imagem no manifest.json ainda.</p>'}<button class=btn data-a=close>Cancelar</button></div></div>`;
+ if(S.sheet=='gal')return`<div class=ov><div class=sh><h3>Escolha a imagem</h3><div class=gal2>${Array.from({length:20},(_,k)=>{const f='imagem'+(k+1)+'.png';return`<button class="${S.pick==f?'on':''}" data-a=setimg data-v="${f}"><img src="imagens/${f}" alt="${k+1}" onerror="this.outerHTML=avt('g${k+1}',64)">${k+1}</button>`}).join('')}</div><button class="btn p" data-a=okimg>${ic('check')} Confirmar</button><button class=btn data-a=setimg data-v="">Usar avatar padrão</button><button class=btn data-a=close>Cancelar</button></div></div>`;
+ if(S.sheet=='editc')return`<div class=ov><div class=sh><h3>Editar campeonato</h3><input type=text id=en maxlength=40 value="${esc(S.en||'')}" placeholder="Nome do campeonato"><button class="btn p" data-a=saveec>Salvar</button><button class=btn data-a=close>Cancelar</button></div></div>`;
  return''}
-const TITLES={home:'PRESIDENTE',newc:'Novo campeonato',champ:'Campeonato',hist:'Histórico',rank:'Ranking',pl:'Jogadores',info:'Sobre',regras:'Regras do Jogo',config:'Configurações',pj:'Jogador'};
+const TITLES={home:'PRESIDENTE',newc:'Novo campeonato',champ:'Campeonato',hist:'Histórico',rank:'Ranking',pl:'Jogadores',info:'Sobre',regras:'Regras do Jogo',config:'Configurações',pj:'Jogador',mgmt:'Campeonatos',edc:'Editar campeonato'};
+let HIST=[];
 function render(){const v=S.view;if(v=='login'){$('#app').innerHTML=vLogin();return}
- const V={home:vHome,newc:vNewc,champ:vChamp,hist:vHist,rank:vRank,pl:vPl,info:vInfo,regras:vRegras,config:vConfig,pj:vPj}[v]||vHome,t=v=='hist'&&S.sub?(S.sub=='c'?'Campeonatos':'Jogadores'):TITLES[v];
- $('#app').innerHTML=`<div class=hdr>${v!='home'?`<button class="hb hm" data-a=home>${ic('home',20)}<span>Menu</span></button>`:ic('crown',28)}<h1>${t||''}</h1><button class=hb data-a=config>${ic('cog',24)}</button><button class=hb data-a=info>${ic('info',24)}</button></div><main>${V()}<p class=foot>Criado por <b>Lumanoids</b></p></main>${sheet()}`}
-function go(v,x){S=Object.assign({view:v},x||{});render();scrollTo(0,0)}
+ const V={home:vHome,newc:vNewc,champ:vChamp,hist:vHist,rank:vRank,pl:vPl,info:vInfo,regras:vRegras,config:vConfig,pj:vPj,mgmt:vMgmt,edc:vEdc}[v]||vHome,t=v=='hist'&&S.sub?(S.sub=='c'?'Campeonatos':'Jogadores'):TITLES[v],em=DB.campeonatos.some(c=>c.status=='em_andamento'),home=v=='home';
+ $('#app').innerHTML=`<div class=hdr>${home?ic('crown',34):`<button class="hb hm" data-a=menu>${ic('home',20)}<span>Menu</span></button>`}<div class=ht2><h1 class="${home?'':'c'}">${t||''}</h1>${home?`<span class="pill ${em?'on':''}"><i></i>${em?'AO VIVO':'FORA DO AR'}</span>`:''}</div><button class=hb data-a=config>${ic('cog',22)}</button><button class=hb data-a=info>${ic('info',22)}</button></div><main>${V()}${home?'':`<button class="btn back" data-a=back>${ic('back')} Voltar</button>`}<p class=foot>Criado por <b>Lumanoids</b> ${ic('heart',14)} <span style="opacity:.6">v${APP_VERSION}</span></p></main>${sheet()}`;setTimeout(hint,60)}
+function go(v,x,rep){if(!rep&&S&&S.view!='login'){const p=Object.assign({},S);delete p.sheet;HIST.push(p);if(HIST.length>40)HIST.shift()}S=Object.assign({view:v},x||{});render();scrollTo(0,0)}
 setInterval(()=>$d.querySelectorAll('[data-t]').forEach(e=>{const r=DB.rodadas.find(x=>x.id==e.dataset.t);if(r)e.textContent=dur(el(r))}),1000);
 
 /* ---------- ações ---------- */
@@ -137,7 +146,7 @@ function shareImg(c){const st=standing(c.id),mx=Math.max(...st.map(s=>s.pres)),c
   else{dl(b,file.name);toast('Imagem baixada. Abrindo o WhatsApp…');setTimeout(()=>window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank'),900)}},'image/png')}
 const A={
  async login(){const{error}=await Auth.login($('#lu').value,$('#lp').value);if(error)return toast('Usuário ou senha inválidos.');await start()},
- async logout(){await Auth.logout()},home:()=>go('home'),info:()=>go('info'),regras:()=>go('regras'),config:()=>go('config'),hist:()=>go('hist'),rank:()=>go('rank',{year:'all'}),pl:()=>go('pl'),
+ async logout(){await Auth.logout()},home:()=>{HIST=[];go('home',{},true)},menu:()=>{HIST=[];go('home',{},true)},back(){const p=HIST.pop();S=p||{view:'home'};render();scrollTo(0,0)},info:()=>go('info'),regras:()=>go('regras'),config:()=>go('config'),hist:()=>go('hist'),rank:()=>go('rank',{year:'all'}),pl:()=>go('pl'),
  hsub:e=>go('hist',{sub:e.dataset.v}),det:e=>go('champ',{cid:e.dataset.id}),pj:e=>go('pj',{pid:e.dataset.id}),
  tsnd:()=>{snd=!snd;localStorage.setItem('pres_snd',snd?'1':'0');render();if(snd)play('inicio')},
  async install(){if(DEF){DEF.prompt();await DEF.userChoice;DEF=null;render()}else alert('Para instalar:\n\nAndroid (Chrome): menu ⋮ → "Instalar aplicativo".\niPhone (Safari): botão Compartilhar → "Adicionar à Tela de Início".')},
@@ -146,12 +155,13 @@ const A={
  selall:()=>{S.sel=DB.jogadores.filter(p=>p.ativo).map(p=>p.id);render()},selnone:()=>{S.sel=[];render()},
  tsel:e=>{const i=S.sel.indexOf(e.dataset.id);i<0?S.sel.push(e.dataset.id):S.sel.splice(i,1);render()},
  addp:addPlayer,close:()=>{S.sheet=null;render()},
- gal:e=>{S.gal=e.dataset.id;S.sheet='gal';render()},
- async setimg(e){const f=e.dataset.v||null;if(S.gal=='new'){S.newImg=f||''}else{await db_(SB.from('jogadores').update({imagem:f}).eq('id',S.gal));P(S.gal).imagem=f}S.sheet=null;render()},
+ gal:e=>{S.gal=e.dataset.id;S.pick=S.gal=='new'?(S.newImg||''):(P(S.gal).imagem||'');S.sheet='gal';render()},
+ setimg:e=>{S.pick=e.dataset.v;render()},
+ async okimg(){const f=S.pick||null;if(S.gal=='new'){S.newImg=f||''}else{await db_(SB.from('jogadores').update({imagem:f}).eq('id',S.gal));P(S.gal).imagem=f}S.sheet=null;render();toast('Imagem salva.')},
  async ren(e){const p=P(e.dataset.id),n=(prompt('Novo nome:',p.nome)||'').trim();if(!n)return;await db_(SB.from('jogadores').update({nome:n}).eq('id',p.id));p.nome=n;render()},
  async tact(e){const p=P(e.dataset.id);await db_(SB.from('jogadores').update({ativo:!p.ativo}).eq('id',p.id));p.ativo=!p.ativo;render()},
  async start(){if(S.sel.length<2)return toast('Selecione ao menos 2 jogadores.');const c=await db_(SB.from('campeonatos').insert({nome:sortName()}).select().single());
-  await db_(SB.from('campeonato_jogadores').insert(S.sel.map(id=>({campeonato_id:c.id,jogador_id:id}))));log(c.id,null,'campeonato','Campeonato criado');play('inicio');await loadAll();go('champ',{cid:c.id,mode:'judge'})},
+  await db_(SB.from('campeonato_jogadores').insert(S.sel.map(id=>({campeonato_id:c.id,jogador_id:id}))));log(c.id,null,'campeonato','Campeonato criado');play('inicio');await loadAll();HIST=[{view:'home'}];go('champ',{cid:c.id,mode:'judge'},true)},
  nround:()=>{S.sheet='round';S.judge=who();S.tipo='aberta';render()},jpick:e=>{S.judge=e.dataset.v;render()},tipo:e=>{S.tipo=e.dataset.v;render()},
  async startr(){const j=(S.judge||'').trim();if(!j)return toast('Informe quem vai anotar.');localStorage.setItem('pres_nome',j);const cid=S.cid;
   const act=DB.cj.filter(x=>x.campeonato_id==cid&&x.status=='ativo').map(x=>x.jogador_id);if(act.length<2)return toast('Precisa de ao menos 2 jogadores ativos.');
@@ -168,21 +178,36 @@ const A={
   DB.res.push(row);playPos(pos,n);setTimeout(render,180);const{error}=await SB.from('rodada_resultados').insert(row);if(error){toast('Erro ao salvar: '+error.message);await refresh()}},
  async undo(){const cr=curR(S.cid),l=resR(cr.id).pop();if(!l)return;DB.res=DB.res.filter(x=>x!==l);render();const{error}=await SB.from('rodada_resultados').delete().match({rodada_id:l.rodada_id,jogador_id:l.jogador_id});if(error){toast('Erro: '+error.message);await refresh()}else log(S.cid,cr.id,'desfazer','Desfeito: '+nm(l.jogador_id))},
  async endr(){const cr=curR(S.cid),d=Math.round((Date.now()-new Date(cr.iniciada_em))/1000);await db_(SB.from('rodadas').update({status:'finalizada',finalizada_em:new Date().toISOString(),duracao_seg:d}).eq('id',cr.id));log(S.cid,cr.id,'rodada','Rodada '+cr.numero+' finalizada ('+dur(d)+')');await refresh();toast('Rodada finalizada.')},
- async endc(){if(!confirm('Finalizar o campeonato?'))return;await db_(SB.from('campeonatos').update({status:'finalizado',encerrado_em:new Date().toISOString()}).eq('id',S.cid));log(S.cid,null,'campeonato','Finalizado');await loadAll();go('champ',{cid:S.cid});toast('Campeonato finalizado. Compartilhe o resultado!')},
- async reopen(){if(!confirm('Reabrir este campeonato? Rodadas e pontos são mantidos.'))return;await db_(SB.from('campeonatos').update({status:'em_andamento',encerrado_em:null,reaberto_em:new Date().toISOString()}).eq('id',S.cid));log(S.cid,null,'campeonato','Reaberto');await loadAll();go('champ',{cid:S.cid,mode:'judge'})},
- async delc(e){const c=CH(e.dataset.id);if(!confirm('Apagar "'+c.nome+'" com todas as rodadas e resultados? Não dá para desfazer.'))return;await db_(SB.from('campeonatos').delete().eq('id',c.id));await loadAll();render();toast('Campeonato apagado.')},
+ async endc(){if(!confirm('Finalizar o campeonato?'))return;await db_(SB.from('campeonatos').update({status:'finalizado',encerrado_em:new Date().toISOString()}).eq('id',S.cid));log(S.cid,null,'campeonato','Finalizado');await loadAll();go('champ',{cid:S.cid},true);toast('Campeonato finalizado. Compartilhe o resultado!')},
+ async reopen(){if(!confirm('Reabrir este campeonato? Rodadas e pontos são mantidos.'))return;await db_(SB.from('campeonatos').update({status:'em_andamento',encerrado_em:null,reaberto_em:new Date().toISOString()}).eq('id',S.cid));log(S.cid,null,'campeonato','Reaberto');await loadAll();go('champ',{cid:S.cid,mode:'judge'},true)},
+ async delc(){const c=CH(S.cfgc);if(!c)return toast('Escolha um campeonato.');if(!confirm('Apagar "'+c.nome+'" com todas as rodadas e resultados? Não dá para desfazer.'))return;await db_(SB.from('campeonatos').delete().eq('id',c.id));S.cfgc='';await loadAll();render();toast('Campeonato apagado.')},
+ editc(){const c=CH(S.cfgc);if(!c)return;S.en=c.nome;S.sheet='editc';render()},
+ async saveec(){const n=(S.en||'').trim();if(!n)return toast('Informe o nome.');await db_(SB.from('campeonatos').update({nome:n}).eq('id',S.cfgc));S.sheet=null;await loadAll();render();toast('Campeonato atualizado.')},
+ trounds:()=>{S.rd=!S.rd;render()},
+ mgmt:()=>go('mgmt',{open:''}),acc:e=>{S.open=S.open==e.dataset.id?'':e.dataset.id;render()},
+ edc:e=>{const c=CH(e.dataset.id);go('edc',{eid:c.id,en:c.nome,part:DB.cj.filter(x=>x.campeonato_id==c.id&&x.status=='ativo').map(x=>x.jogador_id)})},
+ async saveedc(){const c=CH(S.eid),n=(S.en||'').trim();if(!n)return toast('Informe o nome.');
+  if(n!=c.nome)await db_(SB.from('campeonatos').update({nome:n}).eq('id',c.id));
+  if(c.status!='finalizado'){if(S.part.length<2)return toast('Selecione ao menos 2 jogadores.');S.cid=c.id;await applyParts(S.part)}
+  await loadAll();toast('Campeonato atualizado.');A.back()},
+ async delc2(e){const c=CH(e.dataset.id);if(!c)return;const nr=rds(c.id).length;if(!confirm('Apagar o campeonato "'+c.nome+'"?\n\nSerão apagadas '+nr+' rodada(s) e todos os resultados dele. Não dá para desfazer.'))return;
+  await db_(SB.from('campeonatos').delete().eq('id',c.id));await loadAll();if(S.view=='edc'){S.view='mgmt';S.open=''}render();toast('Campeonato apagado.')},
+ scrolldn:()=>scrollBy({top:innerHeight*.8,behavior:'smooth'}),
  share(){const c=CH(S.cid),u=location.origin+location.pathname+'#/c/'+c.id;window.open('https://wa.me/?text='+encodeURIComponent('Acompanhe o '+c.nome+' ao vivo: '+u),'_blank')},
  shareimg:()=>shareImg(CH(S.cid)),year:()=>{},
  async exp(){await loadAll();const d=new Date().toISOString();dl(new Blob([JSON.stringify({app:'presidente-lumanoids',versao:4,exportado_em:d,dados:DB},null,1)],{type:'application/json'}),'presidente-backup-'+d.slice(0,10)+'.json')}};
 $d.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(t&&t.tagName!='SELECT'&&A[t.dataset.a])A[t.dataset.a](t)});
-$d.addEventListener('change',e=>{if(e.target.dataset.a=='year'){S.year=e.target.value;render()}});
-$d.addEventListener('input',e=>{if(e.target.id=='jn')S.judge=e.target.value;if(e.target.id=='pn')S.pn=e.target.value});
+$d.addEventListener('change',e=>{if(e.target.dataset.a=='year'){S.year=e.target.value;render()}if(e.target.dataset.a=='cfgsel'){S.cfgc=e.target.value;render()}});
+$d.addEventListener('input',e=>{if(e.target.id=='jn')S.judge=e.target.value;if(e.target.id=='pn')S.pn=e.target.value;if(e.target.id=='en')S.en=e.target.value});
 $d.addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.id=='lp')A.login()});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();DEF=e});
 
 /* ---------- início ---------- */
-async function start(){await Promise.all([loadAll(),loadGal()]);seenR=new Set(DB.res.map(x=>x.rodada_id+'|'+x.jogador_id));
- const m=location.hash.match(/#\/c\/([0-9a-f-]{36})/);S=m&&CH(m[1])?{view:'champ',cid:m[1],mode:'live'}:{view:'home'};sub();render()}
+async function start(){await loadAll();seenR=new Set(DB.res.map(x=>x.rodada_id+'|'+x.jogador_id));
+ const m=location.hash.match(/#\/c\/([0-9a-f-]{36})/);S=m&&CH(m[1])?{view:'champ',cid:m[1],mode:'live'}:{view:'home'};HIST=[];sub();render()}
 SB.auth.onAuthStateChange(ev=>{if(ev=='SIGNED_OUT'){S={view:'login'};render()}});
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator){const had=navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!window.__rl){window.__rl=1;location.reload()}});navigator.serviceWorker.register('sw.js').catch(()=>{})}
 (async()=>{try{(await Auth.session())?await start():render()}catch(e){render();toast('Sem conexão com o Supabase.')}})();
+
+function hint(){const b=$('#dn');if(!b)return;const rest=document.documentElement.scrollHeight-scrollY-innerHeight;b.classList.toggle('show',rest>60&&S.view!='login')}
+window.addEventListener('scroll',hint,{passive:true});window.addEventListener('resize',hint);
